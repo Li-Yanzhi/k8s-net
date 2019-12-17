@@ -18,9 +18,14 @@ namespace k8snet
             foreach (var item in svc.Items)
             {
                 Console.WriteLine("Name:" + item.Metadata.Name);
+                Console.WriteLine("Type:" + item.Spec.Type);
                 Console.WriteLine("Cluster-IP:" + item.Spec.ClusterIP);
-                //Console.WriteLine("External-IP:" + item.Status.LoadBalancer.Ingress[0].Ip);
-                Console.WriteLine("Hostname:" + item.Status.LoadBalancer.Ingress[0].Hostname);
+                
+                if(item.Spec.Type.Equals("LoadBalancer"))
+                {
+                    Console.WriteLine("Hostname:" + item.Status.LoadBalancer.Ingress[0].Hostname);
+                    //Console.WriteLine("External-IP:" + item.Status.LoadBalancer.Ingress[0].Ip);
+                }
                 Console.WriteLine("----");
             }
 
