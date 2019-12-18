@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+spec:
+  initContainers:
+  - name: init-get-service-ip
+    image: yanzhi/k8s-net
+    command: ['dotnet', 'k8s-net.dll', 'exservice']
+    volumeMounts:
+    - mountPath: /data/
+      name: config    
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'cat /data/dubbo-env && source /data/dubbo-env && echo $DUBBO && echo The app is running! && sleep 3600']
+    volumeMounts:
+    - mountPath: /data/
+      name: config       
+  volumes:
+  - emptyDir: {}
+    name: config
+  # initContainers:
+  # - name: init-myservice
+  #   image: busybox:1.28
+  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
