@@ -9,31 +9,63 @@ namespace k8snet
     {
         static void Main(string[] args)
         {
+            string svcToFind = "exservice";
+            Console.WriteLine($"Container to resolve Server external IP");
+            if(args.Length < 1)
+            {
+                Console.WriteLine($"Cannot find the Service Name in parameters.");
+                //return;
+            }
             //var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
             var config = KubernetesClientConfiguration.InClusterConfig();
-
+            var currentNs = config.Namespace;
+        
+            Console.WriteLine($"Current Namespace:{currentNs}");
+            //Console.WriteLine($"Service to locate:{args[0]}");
+            Console.WriteLine($"Service to locate: {svcToFind}");
+            
             IKubernetes client = new Kubernetes(config);
 
-            var svc = client.ListNamespacedService("default");
-            foreach (var item in svc.Items)
+            var svc = client.ListNamespacedService(currentNs);
+            var found = false;
+            do 
             {
-                Console.WriteLine("Name:" + item.Metadata.Name);
-                Console.WriteLine("Type:" + item.Spec.Type);
-                Console.WriteLine("Cluster-IP:" + item.Spec.ClusterIP);
-                
-                if(item.Spec.Type.Equals("LoadBalancer"))
+                Console.WriteLine($"Query Service Spec...");
+                foreach (var item in svc.Items)
                 {
-                    Console.WriteLine("Hostname:" + item.Status.LoadBalancer.Ingress[0].Hostname);
-                    //Console.WriteLine("External-IP:" + item.Status.LoadBalancer.Ingress[0].Ip);
+                    if(item.Metadata.Name.ToLower().Equals(svcToFind.ToLower()))
+                    {
+                        Console.WriteLine($"Found Service {svcToFind}");
+                        if(item.Spec.Type.Equals("LoadBalancer"))
+                        {
+                            if(!string.IsNullOrEmpty(item.Status.LoadBalancer.Ingress[0].Hostname))
+                            {
+                                //Found IP, write to file
+                                Console.WriteLine($"Get Service {svcToFind} current External-IP {item.Status.LoadBalancer.Ingress[0].Hostname} successfully!");
+                                found = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Cannot get Service {svcToFind} current External-IP, retry after 2 seconds...");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Service {svcToFind} type is not LoadBalancer, exit...");
+                            found = true;
+                        }
+                        break;
+                    }
                 }
-                Console.WriteLine("----");
-            }
+                Thread.Sleep(2000);
+            }while(!found);
 
-            Console.WriteLine("press ctrl + c to stop watching");
 
-            var ctrlc = new ManualResetEventSlim(false);
-            Console.CancelKeyPress += (sender, eventArgs) => ctrlc.Set();
-            ctrlc.Wait();
+            // Console.WriteLine("press ctrl + c to stop watching");
+
+            // var ctrlc = new ManualResetEventSlim(false);
+            // Console.CancelKeyPress += (sender, eventArgs) => ctrlc.Set();
+            // ctrlc.Wait();
             // var namespaces = client.ListNamespace();
             // foreach (var ns in namespaces.Items) {
             //     Console.WriteLine(ns.Metadata.Name);
