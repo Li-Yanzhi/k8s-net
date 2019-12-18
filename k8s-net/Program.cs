@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.IO;
 using k8s;
 using k8s.Models;
 
@@ -43,8 +44,16 @@ namespace k8snet
                             if(!string.IsNullOrEmpty(item.Status.LoadBalancer.Ingress[0].Hostname))
                             {
                                 //Found IP, write to file
-                                Console.WriteLine($"Get Service {svcToFind} current External-IP {item.Status.LoadBalancer.Ingress[0].Hostname} successfully!");
+                                var ip = item.Status.LoadBalancer.Ingress[0].Hostname;
+                                Console.WriteLine($"Get Service {svcToFind} current External-IP [{ip}] successfully!");
                                 found = true;
+
+                                var filePath = "/data/dubbo-env";
+                                Console.WriteLine($"Write Service IP to file {filePath}");
+                                using (var writer = File.CreateText(filePath))
+                                {
+                                    writer.WriteLine($"DUBBO={ip}"); //or .Write(), if you wish
+                                }
                             }
                             else
                             {
