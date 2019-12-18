@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Publish Docker Images to GPR
-      uses: machine-learning-apps/gpr-docker-publish@v1.4
+      uses: machine-learning-apps/gpr-docker-publish@master
       id: docker
       with:
         IMAGE_NAME: 'k8s-net'
