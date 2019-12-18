@@ -26,11 +26,13 @@ namespace k8snet
             
             IKubernetes client = new Kubernetes(config);
 
-            var svc = client.ListNamespacedService(currentNs);
             var found = false;
             do 
             {
-                Console.WriteLine($"Query Service Spec...");
+                Console.WriteLine($"Query Kubernetes Service spec...");
+
+                var svc = client.ListNamespacedService(currentNs);
+                
                 foreach (var item in svc.Items)
                 {
                     if(item.Metadata.Name.ToLower().Equals(svcToFind.ToLower()))
