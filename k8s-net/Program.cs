@@ -11,18 +11,24 @@ namespace k8snet
         static void Main(string[] args)
         {
             string svcToFind = "exservice";
+            var configFile = "/data/dubbo-env";
+            var retryInterval = 2000;
+            
             Console.WriteLine($"Container to resolve Server external IP");
             if(args.Length < 1)
             {
                 Console.WriteLine($"Cannot find the Service Name in parameters.");
                 //return;
             }
+            else
+            {
+                svcToFind = args[0];
+            }
             //var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
             var config = KubernetesClientConfiguration.InClusterConfig();
             var currentNs = string.IsNullOrEmpty(config.Namespace) ? "default" : config.Namespace;
         
             Console.WriteLine($"Current Namespace:{currentNs}");
-            //Console.WriteLine($"Service to locate:{args[0]}");
             Console.WriteLine($"Service to locate: {svcToFind}");
             
             IKubernetes client = new Kubernetes(config);
@@ -48,16 +54,15 @@ namespace k8snet
                                 Console.WriteLine($"Get Service {svcToFind} current External-IP [{ip}] successfully!");
                                 found = true;
 
-                                var filePath = "/data/dubbo-env";
-                                Console.WriteLine($"Write Service IP to file {filePath}");
-                                using (var writer = File.CreateText(filePath))
+                                Console.WriteLine($"Write Service IP to file {configFile} and exit");
+                                using (var writer = File.CreateText(configFile))
                                 {
                                     writer.WriteLine($"DUBBO={ip}"); //or .Write(), if you wish
                                 }
                             }
                             else
                             {
-                                Console.WriteLine($"Cannot get Service {svcToFind} current External-IP, retry after 2 seconds...");
+                                Console.WriteLine($"Cannot get Service {svcToFind} current External-IP, will retry after {retryInterval/1000} seconds...");
                             }
                         }
                         else
@@ -68,7 +73,7 @@ namespace k8snet
                         break;
                     }
                 }
-                Thread.Sleep(2000);
+                Thread.Sleep(retryInterval);
             }while(!found);
 
 
