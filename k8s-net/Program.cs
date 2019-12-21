@@ -8,6 +8,10 @@ namespace k8snet
 {
     class Program
     {
+        private static string NamespaceFilePath = Path.Combine(new string[] {
+                "var", "run", "secrets", "kubernetes.io", "serviceaccount", "namespace"
+            });
+
         static void Main(string[] args)
         {
             while(true)
@@ -29,16 +33,15 @@ namespace k8snet
                     }
                     //var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
                     var config = KubernetesClientConfiguration.InClusterConfig();
-                    var currentNs = string.IsNullOrEmpty(config.Namespace) ? "default" : config.Namespace;
+                    var ns = File.ReadAllText(NamespaceFilePath);
+                    
+                    var currentNs = string.IsNullOrEmpty(ns) ? "default" : ns;
                 
-                    Console.WriteLine($"Current Namespace:[{config.Namespace}], Host: [{config.Host}], User:[{config.Username}], Password: [{config.Password}], Context: [{config.CurrentContext}]");
-
                     Console.WriteLine($"Current Namespace:{currentNs}");
                     Console.WriteLine($"Service to locate: {svcToFind}");
                     
                     IKubernetes client = new Kubernetes(config);
         
-
                     var found = false;
                     do 
                     {

@@ -11,7 +11,9 @@ spec:
     command: ['dotnet', 'k8s-net.dll', 'exservice']
     volumeMounts:
     - mountPath: /data/
-      name: config    
+      name: config
+  #   image: busybox:1.28
+  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
   containers:
   - name: myapp-container
     image: busybox:1.28
@@ -22,7 +24,3 @@ spec:
   volumes:
   - emptyDir: {}
     name: config
-  # initContainers:
-  # - name: init-myservice
-  #   image: busybox:1.28
-  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
