@@ -8,6 +8,7 @@ namespace k8snet
 {
     class Program
     {
+        //namespace file path in pod
         private static string NamespaceFilePath = Path.Combine(new string[] {
                 "/", "var", "run", "secrets", "kubernetes.io", "serviceaccount", "namespace"
             });
@@ -22,10 +23,10 @@ namespace k8snet
                     var configFile = "/data/dubbo-env";
                     var retryInterval = 5000;
                     
-                    Console.WriteLine($"Container to resolve Server external IP");
+                    WriteConsole($"Container to resolve Server external IP");
                     if(args.Length < 1)
                     {
-                        Console.WriteLine($"Cannot find the Service Name in parameters.");
+                        WriteConsole($"Cannot find the Service Name in parameters.", true);
                         //return;
                     }
                     else
@@ -38,15 +39,15 @@ namespace k8snet
                     
                     var currentNs = string.IsNullOrEmpty(ns) ? "default" : ns;
                 
-                    Console.WriteLine($"Current Namespace:{currentNs}");
-                    Console.WriteLine($"Service to locate: {svcToFind}");
+                    WriteConsole($"Current Namespace:{currentNs}");
+                    WriteConsole($"Service to locate: {svcToFind}");
                     
                     IKubernetes client = new Kubernetes(config);
         
                     var found = false;
                     do 
                     {
-                        Console.WriteLine($"Query Kubernetes Service spec...");
+                        WriteConsole($"Get Kubernetes Service Spec...");
 
                         var svc = client.ListNamespacedService(currentNs);
                         
@@ -54,7 +55,7 @@ namespace k8snet
                         {
                             if(item.Metadata.Name.ToLower().Equals(svcToFind.ToLower()))
                             {
-                                Console.WriteLine($"Found Service {svcToFind}");
+                                WriteConsole($"Found Service {svcToFind}");
                                 if(item.Spec.Type.Equals("LoadBalancer"))
                                 {
                                     var serviceIp = item.Status.LoadBalancer.Ingress[0].Ip;
@@ -62,10 +63,10 @@ namespace k8snet
                                     if(!string.IsNullOrEmpty(serviceIp))
                                     {
                                         //Found IP, write to file
-                                        Console.WriteLine($"Get Service {svcToFind} current External-IP [{serviceIp}] successfully!");
+                                        WriteConsole($"Get Service {svcToFind} current External-IP [{serviceIp}] successfully!");
                                         found = true;
 
-                                        Console.WriteLine($"Write Service IP to file {configFile} and exit");
+                                        WriteConsole($"Write Service IP to file {configFile} and exit");
                                         using (var writer = File.CreateText(configFile))
                                         {
                                             writer.WriteLine($"DUBBO={serviceIp}"); //or .Write(), if you wish
@@ -73,12 +74,12 @@ namespace k8snet
                                     }
                                     else
                                     {
-                                        Console.WriteLine($"Cannot get Service {svcToFind} current External-IP, will retry after {retryInterval/1000} seconds...");
+                                        WriteConsole($"Cannot get Service {svcToFind} current External-IP, will retry after {retryInterval/1000} seconds...", true);
                                     }
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"Service {svcToFind} type is not LoadBalancer, exit...");
+                                    WriteConsole($"Service {svcToFind} type is not LoadBalancer", true);
                                     found = true;
                                 }
                                 break;
@@ -91,10 +92,12 @@ namespace k8snet
                 }
                 catch(Exception ex1)
                 {
-                    Console.WriteLine($"Error: {ex1.Message} \n\n {ex1.StackTrace}");
+                    WriteConsole($"Error: {ex1.Message} \n\n {ex1.StackTrace}", true);
                     Thread.Sleep(exRetryInterval);
                 }
             }
+
+
 
 
             // Console.WriteLine("press ctrl + c to stop watching");
@@ -127,6 +130,16 @@ namespace k8snet
             //     Console.CancelKeyPress += (sender, eventArgs) => ctrlc.Set();
             //     ctrlc.Wait();
             // }
+        }
+
+        private static void WriteConsole(string msg, bool isError = false)
+        {
+            if(isError)
+                Console.ForegroundColor = ConsoleColor.Red;
+
+            Console.WriteLine($"{DateTime.Now.ToString()}\t{msg}");
+
+            Console.ResetColor();
         }
     }
 }
