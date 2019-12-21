@@ -97,9 +97,7 @@ namespace k8snet
                 }
             }
 
-
-
-
+            #region Sample
             // Console.WriteLine("press ctrl + c to stop watching");
 
             // var ctrlc = new ManualResetEventSlim(false);
@@ -130,6 +128,7 @@ namespace k8snet
             //     Console.CancelKeyPress += (sender, eventArgs) => ctrlc.Set();
             //     ctrlc.Wait();
             // }
+            #endregion
         }
 
         private static void WriteConsole(string msg, bool isError = false)
