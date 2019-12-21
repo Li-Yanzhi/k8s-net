@@ -9,7 +9,7 @@ namespace k8snet
     class Program
     {
         private static string NamespaceFilePath = Path.Combine(new string[] {
-                "var", "run", "secrets", "kubernetes.io", "serviceaccount", "namespace"
+                "/", "var", "run", "secrets", "kubernetes.io", "serviceaccount", "namespace"
             });
 
         static void Main(string[] args)
