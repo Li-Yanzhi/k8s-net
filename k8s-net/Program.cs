@@ -14,12 +14,13 @@ namespace k8snet
 
         static void Main(string[] args)
         {
+            var exRetryInterval = 30 * 1000;
             while(true)
             {
                 try{
                     string svcToFind = "exservice";
                     var configFile = "/data/dubbo-env";
-                    var retryInterval = 2000;
+                    var retryInterval = 5000;
                     
                     Console.WriteLine($"Container to resolve Server external IP");
                     if(args.Length < 1)
@@ -56,17 +57,18 @@ namespace k8snet
                                 Console.WriteLine($"Found Service {svcToFind}");
                                 if(item.Spec.Type.Equals("LoadBalancer"))
                                 {
-                                    if(!string.IsNullOrEmpty(item.Status.LoadBalancer.Ingress[0].Hostname))
+                                    var serviceIp = item.Status.LoadBalancer.Ingress[0].Ip;
+                                    //var ip = item.Status.LoadBalancer.Ingress[0].Hostname;
+                                    if(!string.IsNullOrEmpty(serviceIp))
                                     {
                                         //Found IP, write to file
-                                        var ip = item.Status.LoadBalancer.Ingress[0].Hostname;
-                                        Console.WriteLine($"Get Service {svcToFind} current External-IP [{ip}] successfully!");
+                                        Console.WriteLine($"Get Service {svcToFind} current External-IP [{serviceIp}] successfully!");
                                         found = true;
 
                                         Console.WriteLine($"Write Service IP to file {configFile} and exit");
                                         using (var writer = File.CreateText(configFile))
                                         {
-                                            writer.WriteLine($"DUBBO={ip}"); //or .Write(), if you wish
+                                            writer.WriteLine($"DUBBO={serviceIp}"); //or .Write(), if you wish
                                         }
                                     }
                                     else
@@ -90,7 +92,7 @@ namespace k8snet
                 catch(Exception ex1)
                 {
                     Console.WriteLine($"Error: {ex1.Message} \n\n {ex1.StackTrace}");
-                    Thread.Sleep(20 * 1000);
+                    Thread.Sleep(exRetryInterval);
                 }
             }
 
