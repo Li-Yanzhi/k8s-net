@@ -122,7 +122,6 @@ namespace k8snet
             //     Console.CancelKeyPress += (sender, eventArgs) => ctrlc.Set();
             //     ctrlc.Wait();
             // }
-            }
         }
     }
 }
