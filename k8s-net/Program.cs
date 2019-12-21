@@ -28,6 +28,8 @@ namespace k8snet
             var config = KubernetesClientConfiguration.InClusterConfig();
             var currentNs = string.IsNullOrEmpty(config.Namespace) ? "default" : config.Namespace;
         
+            Console.WriteLine($"Current Namespace:[{config.Namespace}], Host: [{config.Host}], User:[{config.Username}], Password: [{config.Password}], Context: [{config.CurrentContext}]");
+
             Console.WriteLine($"Current Namespace:{currentNs}");
             Console.WriteLine($"Service to locate: {svcToFind}");
             
