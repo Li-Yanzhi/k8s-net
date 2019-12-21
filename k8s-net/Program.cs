@@ -134,11 +134,14 @@ namespace k8snet
         private static void WriteConsole(string msg, bool isError = false)
         {
             if(isError)
+            {
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"ERROR\t{msg}");
+                Console.ResetColor();
+                return;
+            }
 
-            Console.WriteLine($"{DateTime.Now.ToString()}\t{msg}");
-
-            Console.ResetColor();
+            Console.WriteLine($"INFO \t{msg}");
         }
     }
 }
