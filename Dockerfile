@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 WORKDIR /app
 
+#comments
 COPY ./k8s-net/k8s-net.csproj .
 RUN dotnet restore k8s-net.csproj
 
